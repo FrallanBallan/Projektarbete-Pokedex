@@ -97,34 +97,37 @@ class Pokemon {
     let damage = Math.floor((attack - defense) * 0.8);
     if (damage < 10) {
       defender.hp -= 10;
-      return 10;
+      return 10; // To update battleLog - store the value 10
     } else {
       defender.hp -= damage;
-      return damage;
+      return damage; // To update battleLog - store the value
     }
   }
-  battle(opponent) {
-    let damageDealt = this.attack(opponent);
-    let battleLog = `${this.name} attacks ${opponent.name} and deals ${damageDealt} damage.`;
+  async battle(opponent) {
+    let specialAttackData = await getData(this.stats[3].stat.url);
+    let randomIndex = Math.floor(
+      Math.random() * specialAttackData.affecting_moves.decrease.length
+    );
+    let specialAttack =
+      specialAttackData.affecting_moves.decrease[randomIndex].move.name;
+    let damageDealt = this.attack(opponent); // firstP.stat + stat - secondP stat + stat
+    let battleLog = `${this.name} attacks ${opponent.name} with ${specialAttack} and deals ${damageDealt} damage.`;
     console.log(battleLog);
-    this.removeHp(damageDealt, opponent);
-    return battleLog;
+    this.removeHp(damageDealt, opponent); // firstP -> dmgdelt - secondP.value (progressbar id = secondP.name)
+    return battleLog; // returing to battlelog/report
   }
   //add remove health
   removeHp(damageDealt, opponent) {
     let defender = document.querySelector(`#${opponent.name}`);
     defender.value -= damageDealt;
     if (defender.value <= 0) {
-      setTimeout(() => {
-        compareResults.innerHTML = "";
-        let firstLine = document.createElement("h3");
-        firstLine.innerText = opponent.name + " is slain";
-        //Lägg till quote?
-        let secondLine = document.createElement("p");
-        secondLine.innerText =
-          "All these moments will be lost in time, like tears, in rain, time to die";
-        compareResults.append(firstLine, secondLine);
-      }, 2000);
+      compareResults.innerHTML = "";
+      let firstLine = document.createElement("h3");
+      firstLine.innerText = opponent.name + " is slain";
+      let secondLine = document.createElement("p");
+      secondLine.innerText =
+        "All these moments will be lost in time, like tears, in rain, time to die";
+      compareResults.append(firstLine, secondLine);
     }
   }
 }
@@ -399,21 +402,21 @@ let battleFunction = (
   secondPokemon,
   battleLogContainer
 ) => {
-  leftAttack.addEventListener("click", () => {
+  leftAttack.addEventListener("click", async () => {
     battleLogContainer.style.display = "block";
     battleLogContainer.innerHTML = "";
     leftAttack.classList.toggle("disableBtn");
     rightAttack.classList.toggle("disableBtn");
-    let battleLog = firstPokemon.battle(secondPokemon); // battle innehåller tre metoder
+    let battleLog = await firstPokemon.battle(secondPokemon); // battle innehåller tre metoder
     //battle(opponent) + this.attack(opponent) + removeHp(damageDealt, opponent)
     battleLogContainer.innerText = battleLog; //battle innehåller battleLog
   });
-  rightAttack.addEventListener("click", () => {
+  rightAttack.addEventListener("click", async () => {
     battleLogContainer.style.display = "block";
     battleLogContainer.innerHTML = "";
     rightAttack.classList.toggle("disableBtn");
     leftAttack.classList.toggle("disableBtn");
-    let battleLog = secondPokemon.battle(firstPokemon); //battle innehåller battleLog
+    let battleLog = await secondPokemon.battle(firstPokemon); //battle innehåller battleLog
     battleLogContainer.innerText = battleLog;
   });
 };
